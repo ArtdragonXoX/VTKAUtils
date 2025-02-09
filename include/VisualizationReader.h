@@ -11,9 +11,9 @@ public:
 	VisualizationReader();
 	~VisualizationReader() = default;
 
-	void SetDicom(const char* dn);
-	void SetStl(const char* fn);
-	void SetDcm(const char* fn);
+	void ReadDicom(const char* dn);
+	void ReadStl(const char* fn);
+	void ReadDcm(const char* fn);
 
 private:
 	vtkSmartPointer<vtkAlgorithm> reader;

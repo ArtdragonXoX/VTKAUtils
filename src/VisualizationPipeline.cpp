@@ -116,6 +116,14 @@ void VisualizationPipeline::ApplyAlgorithms() {
 	this->Update();
 }
 
+void VisualizationPipeline::WriteSTL(const char *fn)
+{
+	vtkSmartPointer<vtkSTLWriter> writer = vtkSmartPointer<vtkSTLWriter>::New();
+	writer->SetFileName(fn);
+	writer->SetInputData(GetOutput());
+	writer->Write();
+}
+
 void VisualizationPipeline::Update()
 {
 	for (auto& algorithm : algorithms)

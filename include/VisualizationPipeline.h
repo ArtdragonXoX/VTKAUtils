@@ -6,6 +6,7 @@
 #include <vtkActor.h>
 #include <vtkProperty.h>
 #include <vtkPolyDataAlgorithm.h>
+#include <vtkSTLWriter.h>
 
 class VisualizationPipeline
 {
@@ -34,8 +35,11 @@ public:
 
 	void ApplyAlgorithms();
 
+	void WriteSTL(const char* fn);
+
 	void Update();
 private:
+
 	std::vector<vtkSmartPointer<vtkPolyDataAlgorithm>> algorithms;
 	vtkSmartPointer<vtkPolyData> polyData;
 	vtkAlgorithmOutput* inputPort;
