@@ -28,6 +28,29 @@ void PointNormalProcessor::SetInput(vtkPolyData *polyData)
     Update();
 }
 
+// 设置PointNormalProcessor的输入连接
+// 参数 port 指向一个vtkAlgorithmOutput对象，代表数据流的输出端口
+void PointNormalProcessor::SetInputConnection(vtkAlgorithmOutput *port)
+{
+    // 通过 port 获取生产该输出的算法和对应的输出索引
+    vtkAlgorithm* producer = port->GetProducer();
+    int index = port->GetIndex();
+    
+    // 将生产者的数据对象安全转换为vtkPolyData类型
+    vtkPolyData* polyData = vtkPolyData::SafeDownCast(producer->GetOutputDataObject(index));
+    // 如果转换失败，抛出运行时错误
+    if (!polyData)
+        throw std::runtime_error("Pipeline output is not vtkPolyData");
+
+    // 创建一个新的vtkPolyData对象作为输入数据的深拷贝
+    inputData = vtkSmartPointer<vtkPolyData>::New();
+    // 浅拷贝polyData到inputData，因为数据结构不会被修改，仅复制指针
+    inputData->ShallowCopy(polyData);
+    
+    // 调用Update方法处理输入数据，尽管这里没有显示Update的实现
+    Update();
+}
+
 void PointNormalProcessor::BuildLocator()
 {
     pointLocator->SetDataSet(processedPolyData);

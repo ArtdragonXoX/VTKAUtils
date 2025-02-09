@@ -9,6 +9,7 @@
 #include <vtkPointData.h>
 #include <vtkArrowSource.h>
 #include <vtkGlyph3D.h>
+#include <vtkAlgorithmOutput.h>
 #include <unordered_set>
 #include <cmath>
 #include <limits>
@@ -22,6 +23,8 @@ public:
     
     void SetInput(VisualizationPipeline* pipeline);
     void SetInput(vtkPolyData* polyData);
+
+    void SetInputConnection(vtkAlgorithmOutput* port);
     
     vtkSmartPointer<vtkPolyData> GetPolyData() const { return processedPolyData; }
 
