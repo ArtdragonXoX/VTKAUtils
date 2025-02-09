@@ -74,10 +74,9 @@ vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsWithinRadius(double r
     return resultIds;
 }
 
-vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsWithinRadius(double radius, const double *center, vtkIdList *resultIds) const
+void PointNormalProcessor::FindPointsWithinRadius(double radius, const double *center, vtkIdList *resultIds) const
 {
     pointLocator->FindPointsWithinRadius(radius, center, resultIds);
-    return resultIds;
 }
 
 vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius) const

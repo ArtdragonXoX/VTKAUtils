@@ -39,7 +39,7 @@ public:
 
     vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double* center) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double* center, vtkIdList* resultIds) const;
+    void FindPointsWithinRadius(double radius, const double* center, vtkIdList* resultIds) const;
 
     vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double* point, const double* direction, double radius) const;
 
