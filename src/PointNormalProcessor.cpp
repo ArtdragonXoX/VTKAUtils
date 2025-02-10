@@ -130,45 +130,37 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 
     // 将范围适当扩展，以确保覆盖整个圆柱体区域（在两端各扩展一个 radius）
-    double start = minProj - radius;
-    double end = maxProj + radius;
+    double start = minProj - radius * radiusRatio;
+    double end = maxProj + radius * radiusRatio;
 
-    // 确定球查询参数：球半径取圆柱半径
+    // 基于球体搜索方式获取候选点集：先生成球体中心，再利用 GetUniquePointsInSpheres 汇总查询结果
     double sphereRadius = radius * radiusRatio;
     double step = sphereRadius * intervalRatio;
-    int numSpheres = static_cast<int>(std::ceil((end - start) / step)) + 1;
 
-    // 利用 unordered_set 去重候选点
-    std::unordered_set<vtkIdType> uniqueIds;
+    double vecStart[3] = {
+        point[0] + start * u[0],
+        point[1] + start * u[1],
+        point[2] + start * u[2]};
+    double vecEnd[3] = {
+        point[0] + end * u[0],
+        point[1] + end * u[1],
+        point[2] + end * u[2]};
 
-    for (int i = 0; i < numSpheres; i++)
+    std::vector<std::array<double, 3>> sphereCenters = GenerateSphereCenters(vecStart, vecEnd, step, sphereRadius);
+    vtkSmartPointer<vtkIdList> candidatePoints = GetUniquePointsInSpheres(sphereCenters, sphereRadius);
+
+    // 对候选点进行圆柱体内的筛选
+    for (vtkIdType i = 0; i < candidatePoints->GetNumberOfIds(); i++)
     {
-        double d = start + i * step;
-        double sphereCenter[3] = {
-            point[0] + d * u[0],
-            point[1] + d * u[1],
-            point[2] + d * u[2]};
-
-        vtkSmartPointer<vtkIdList> sphereIds = FindPointsWithinRadius(sphereRadius, sphereCenter);
-        for (vtkIdType j = 0; j < sphereIds->GetNumberOfIds(); j++)
-        {
-            uniqueIds.insert(sphereIds->GetId(j));
-        }
-    }
-
-    // 遍历所有候选点，计算其与圆柱体轴线的垂直距离，保留符合条件的点
-    for (const auto &pid : uniqueIds)
-    {
+        vtkIdType pid = candidatePoints->GetId(i);
         double p[3];
         processedPolyData->GetPoint(pid, p);
         double v[3] = {p[0] - point[0],
                        p[1] - point[1],
                        p[2] - point[2]};
-        // 计算向量 v 在圆柱轴方向上的投影
         double proj = v[0] * u[0] + v[1] * u[1] + v[2] * u[2];
         double vLenSq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
         double perpSq = vLenSq - proj * proj;
-        // 如果垂直距离小于等于 radius，则该点在圆柱体内
         if (perpSq <= radius * radius)
             resultIds->InsertNextId(pid);
     }
@@ -253,16 +245,8 @@ std::vector<std::array<double, 3>> PointNormalProcessor::GenerateSphereCenters(
                    diff[1] / totalDist,
                    diff[2] / totalDist};
 
-    // 将起点提前扩展一个球半径，将终点后延一个球半径
-    double adjustedStart[3] = {start[0] - sphereRadius * u[0],
-                               start[1] - sphereRadius * u[1],
-                               start[2] - sphereRadius * u[2]};
-    double adjustedEnd[3] = {end[0] + sphereRadius * u[0],
-                             end[1] + sphereRadius * u[1],
-                             end[2] + sphereRadius * u[2]};
-
-    // 有效距离为起点和终点之间的距离加上两侧的扩展
-    double effectiveDistance = totalDist + 2 * sphereRadius;
+    // 使用输入的起点和终点，不再额外扩展范围
+    double effectiveDistance = totalDist;
 
     // 根据球间隔确定需要的球数（+1保证起点也包含）
     int numSpheres = static_cast<int>(std::ceil(effectiveDistance / sphereInterval)) + 1;
@@ -273,19 +257,19 @@ std::vector<std::array<double, 3>> PointNormalProcessor::GenerateSphereCenters(
         if (d > effectiveDistance)
             d = effectiveDistance;
         std::array<double, 3> center = {
-            adjustedStart[0] + d * u[0],
-            adjustedStart[1] + d * u[1],
-            adjustedStart[2] + d * u[2]};
+            start[0] + d * u[0],
+            start[1] + d * u[1],
+            start[2] + d * u[2]};
         centers.push_back(center);
     }
-    // 如果最后一个中心与adjustedEnd差异较大，则额外添加adjustedEnd以确保完全覆盖
+    // 如果最后一个中心与end差异较大，则额外添加end以确保完全覆盖
     std::array<double, 3> lastCenter = centers.back();
-    double diffToEnd = std::sqrt((lastCenter[0] - adjustedEnd[0]) * (lastCenter[0] - adjustedEnd[0]) +
-                                 (lastCenter[1] - adjustedEnd[1]) * (lastCenter[1] - adjustedEnd[1]) +
-                                 (lastCenter[2] - adjustedEnd[2]) * (lastCenter[2] - adjustedEnd[2]));
+    double diffToEnd = std::sqrt((lastCenter[0] - end[0]) * (lastCenter[0] - end[0]) +
+                                 (lastCenter[1] - end[1]) * (lastCenter[1] - end[1]) +
+                                 (lastCenter[2] - end[2]) * (lastCenter[2] - end[2]));
     if (diffToEnd > 1e-8)
     {
-        centers.push_back({adjustedEnd[0], adjustedEnd[1], adjustedEnd[2]});
+        centers.push_back({end[0], end[1], end[2]});
     }
 
     return centers;
