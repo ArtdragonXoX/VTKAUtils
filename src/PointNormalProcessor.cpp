@@ -1,4 +1,8 @@
 #include <vtkPointData.h>
+#include <vector>
+#include <array>
+#include <cmath>
+#include <stdexcept>
 
 #include "PointNormalProcessor.h"
 
@@ -129,7 +133,7 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     double start = minProj - radius;
     double end = maxProj + radius;
 
-    // 确定球查询参数：球半径取圆柱半径，
+    // 确定球查询参数：球半径取圆柱半径
     double sphereRadius = radius * radiusRatio;
     double step = sphereRadius * intervalRatio;
     int numSpheres = static_cast<int>(std::ceil((end - start) / step)) + 1;
@@ -222,4 +226,94 @@ void PointNormalProcessor::Update()
     glyph3D->SetScaleFactor(1.0);
     glyph3D->Update();
     arrowPipeline->SetInput(glyph3D->GetOutput());
+}
+
+std::vector<std::array<double, 3>> PointNormalProcessor::GenerateSphereCenters(
+    const double start[3],
+    const double end[3],
+    double sphereInterval,
+    double sphereRadius)
+{
+    std::vector<std::array<double, 3>> centers;
+    // 计算起点到终点的差值和距离
+    double diff[3] = {end[0] - start[0],
+                      end[1] - start[1],
+                      end[2] - start[2]};
+    double totalDist = std::sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
+
+    // 如果起点和终点几乎相同，则只返回一个球中心
+    if (totalDist < 1e-8)
+    {
+        centers.push_back({start[0], start[1], start[2]});
+        return centers;
+    }
+
+    // 计算单位方向向量
+    double u[3] = {diff[0] / totalDist,
+                   diff[1] / totalDist,
+                   diff[2] / totalDist};
+
+    // 将起点提前扩展一个球半径，将终点后延一个球半径
+    double adjustedStart[3] = {start[0] - sphereRadius * u[0],
+                               start[1] - sphereRadius * u[1],
+                               start[2] - sphereRadius * u[2]};
+    double adjustedEnd[3] = {end[0] + sphereRadius * u[0],
+                             end[1] + sphereRadius * u[1],
+                             end[2] + sphereRadius * u[2]};
+
+    // 有效距离为起点和终点之间的距离加上两侧的扩展
+    double effectiveDistance = totalDist + 2 * sphereRadius;
+
+    // 根据球间隔确定需要的球数（+1保证起点也包含）
+    int numSpheres = static_cast<int>(std::ceil(effectiveDistance / sphereInterval)) + 1;
+
+    for (int i = 0; i < numSpheres; i++)
+    {
+        double d = i * sphereInterval;
+        if (d > effectiveDistance)
+            d = effectiveDistance;
+        std::array<double, 3> center = {
+            adjustedStart[0] + d * u[0],
+            adjustedStart[1] + d * u[1],
+            adjustedStart[2] + d * u[2]};
+        centers.push_back(center);
+    }
+    // 如果最后一个中心与adjustedEnd差异较大，则额外添加adjustedEnd以确保完全覆盖
+    std::array<double, 3> lastCenter = centers.back();
+    double diffToEnd = std::sqrt((lastCenter[0] - adjustedEnd[0]) * (lastCenter[0] - adjustedEnd[0]) +
+                                 (lastCenter[1] - adjustedEnd[1]) * (lastCenter[1] - adjustedEnd[1]) +
+                                 (lastCenter[2] - adjustedEnd[2]) * (lastCenter[2] - adjustedEnd[2]));
+    if (diffToEnd > 1e-8)
+    {
+        centers.push_back({adjustedEnd[0], adjustedEnd[1], adjustedEnd[2]});
+    }
+
+    return centers;
+}
+
+vtkSmartPointer<vtkIdList> PointNormalProcessor::GetUniquePointsInSpheres(
+    const std::vector<std::array<double, 3>> &sphereCenters,
+    double sphereRadius) const
+{
+    std::unordered_set<vtkIdType> uniqueIds;
+
+    // 遍历每个球中心，查找对应半径内的所有点
+    for (const auto &center : sphereCenters)
+    {
+        // center.data() 返回指向数组首地址
+        vtkSmartPointer<vtkIdList> sphereIds = FindPointsWithinRadius(sphereRadius, center.data());
+        for (vtkIdType i = 0; i < sphereIds->GetNumberOfIds(); i++)
+        {
+            uniqueIds.insert(sphereIds->GetId(i));
+        }
+    }
+
+    // 将去重后的点 id 转换为 vtkIdList 返回
+    vtkSmartPointer<vtkIdList> resultIds = vtkSmartPointer<vtkIdList>::New();
+    for (const auto &id : uniqueIds)
+    {
+        resultIds->InsertNextId(id);
+    }
+
+    return resultIds;
 }

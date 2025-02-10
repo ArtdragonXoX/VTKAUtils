@@ -14,6 +14,9 @@
 #include <cmath>
 #include <limits>
 
+#include <vector>
+#include <array>
+
 #include "VisualizationPipeline.h"
 
 class PointNormalProcessor
@@ -58,6 +61,16 @@ public:
     double GetIntervalRatio() const { return intervalRatio; }
 
     void Update();
+
+    vtkSmartPointer<vtkIdList> GetUniquePointsInSpheres(
+        const std::vector<std::array<double, 3>>& sphereCenters,
+        double sphereRadius) const;
+
+    static std::vector<std::array<double, 3>> GenerateSphereCenters(
+        const double start[3],
+        const double end[3],
+        double sphereInterval,
+        double sphereRadius);
 
 private:
     void BuildLocator();
