@@ -51,15 +51,25 @@ public:
 
     vtkSmartPointer<vtkActor> GetArrowActor();
 
+    void SetRadiusRatio(double ratio);
+    void SetIntervalRatio(double ratio);
+
+    double GetRadiusRatio() const { return radiusRatio; }
+    double GetIntervalRatio() const { return intervalRatio; }
+
     void Update();
 
 private:
     void BuildLocator();
+
+    double radiusRatio = 1.2247;
+    double intervalRatio = 1.4142;
     
     vtkSmartPointer<vtkPolyData> inputData;
     vtkSmartPointer<vtkPolyData> processedPolyData;
     vtkSmartPointer<vtkKdTreePointLocator> pointLocator;
     vtkSmartPointer<vtkArrowSource> arrowSource;
     vtkSmartPointer<vtkGlyph3D> glyph3D;
+
     std::unique_ptr<VisualizationPipeline> arrowPipeline;
 };

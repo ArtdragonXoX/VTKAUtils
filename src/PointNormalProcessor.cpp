@@ -33,11 +33,11 @@ void PointNormalProcessor::SetInput(vtkPolyData *polyData)
 void PointNormalProcessor::SetInputConnection(vtkAlgorithmOutput *port)
 {
     // 通过 port 获取生产该输出的算法和对应的输出索引
-    vtkAlgorithm* producer = port->GetProducer();
+    vtkAlgorithm *producer = port->GetProducer();
     int index = port->GetIndex();
-    
+
     // 将生产者的数据对象安全转换为vtkPolyData类型
-    vtkPolyData* polyData = vtkPolyData::SafeDownCast(producer->GetOutputDataObject(index));
+    vtkPolyData *polyData = vtkPolyData::SafeDownCast(producer->GetOutputDataObject(index));
     // 如果转换失败，抛出运行时错误
     if (!polyData)
         throw std::runtime_error("Pipeline output is not vtkPolyData");
@@ -46,7 +46,7 @@ void PointNormalProcessor::SetInputConnection(vtkAlgorithmOutput *port)
     inputData = vtkSmartPointer<vtkPolyData>::New();
     // 浅拷贝polyData到inputData，因为数据结构不会被修改，仅复制指针
     inputData->ShallowCopy(polyData);
-    
+
     // 调用Update方法处理输入数据，尽管这里没有显示Update的实现
     Update();
 }
@@ -85,7 +85,6 @@ vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsInCylinder(const doub
     FindPointsInCylinder(point, direction, radius, resultIds);
     return resultIds;
 }
-
 
 void PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds) const
 {
@@ -131,9 +130,8 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     double end = maxProj + radius;
 
     // 确定球查询参数：球半径取圆柱半径，
-    // 球中心沿轴线的间隔设置为 2*radius*0.95 (即约 1.9*radius)，可有效覆盖且减少重复查询
-    double sphereRadius = radius;
-    double step = sphereRadius * 2 * 0.95;
+    double sphereRadius = radius * radiusRatio;
+    double step = sphereRadius * intervalRatio;
     int numSpheres = static_cast<int>(std::ceil((end - start) / step)) + 1;
 
     // 利用 unordered_set 去重候选点
@@ -155,7 +153,7 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 
     // 遍历所有候选点，计算其与圆柱体轴线的垂直距离，保留符合条件的点
-    for (auto pid : uniqueIds)
+    for (const auto &pid : uniqueIds)
     {
         double p[3];
         processedPolyData->GetPoint(pid, p);
@@ -186,6 +184,16 @@ void PointNormalProcessor::SetGlyph3DScaleFactor(double scaleFactor)
 vtkSmartPointer<vtkActor> PointNormalProcessor::GetArrowActor()
 {
     return arrowPipeline->GetActor();
+}
+
+void PointNormalProcessor::SetRadiusRatio(double ratio)
+{
+    radiusRatio = ratio;
+}
+
+void PointNormalProcessor::SetIntervalRatio(double ratio)
+{
+    intervalRatio = ratio;
 }
 
 void PointNormalProcessor::Update()
