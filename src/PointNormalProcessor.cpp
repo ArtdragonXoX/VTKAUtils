@@ -83,14 +83,14 @@ void PointNormalProcessor::FindPointsWithinRadius(double radius, const double *c
     pointLocator->FindPointsWithinRadius(radius, center, resultIds);
 }
 
-vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius) const
+vtkSmartPointer<vtkIdList> PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius)
 {
     vtkNew<vtkIdList> resultIds;
     FindPointsInCylinder(point, direction, radius, resultIds);
     return resultIds;
 }
 
-void PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds) const
+void PointNormalProcessor::FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds)
 {
     // 归一化方向向量
     double norm = std::sqrt(direction[0] * direction[0] +
@@ -100,34 +100,10 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
         throw std::invalid_argument("Direction vector is zero.");
     double u[3] = {direction[0] / norm, direction[1] / norm, direction[2] / norm};
 
-    // 获取 processedPolyData 的包围盒，用于确定圆柱体沿轴的范围
-    double bounds[6];
-    processedPolyData->GetBounds(bounds);
-    // 构造包围盒的 8 个角点
-    double corners[8][3] = {
-        {bounds[0], bounds[2], bounds[4]},
-        {bounds[1], bounds[2], bounds[4]},
-        {bounds[0], bounds[3], bounds[4]},
-        {bounds[1], bounds[3], bounds[4]},
-        {bounds[0], bounds[2], bounds[5]},
-        {bounds[1], bounds[2], bounds[5]},
-        {bounds[0], bounds[3], bounds[5]},
-        {bounds[1], bounds[3], bounds[5]}};
-
-    double minProj = std::numeric_limits<double>::max();
-    double maxProj = -std::numeric_limits<double>::max();
-    // 计算所有角点在圆柱轴向上的投影，得到范围 [minProj, maxProj]
-    for (int i = 0; i < 8; i++)
-    {
-        double vec[3] = {corners[i][0] - point[0],
-                         corners[i][1] - point[1],
-                         corners[i][2] - point[2]};
-        double proj = vec[0] * u[0] + vec[1] * u[1] + vec[2] * u[2];
-        if (proj < minProj)
-            minProj = proj;
-        if (proj > maxProj)
-            maxProj = proj;
-    }
+    // 调用新函数获取包围盒的投影范围
+    std::array<double, 2> projRange = ComputeBoundingBoxProjectionRange(point, u);
+    double minProj = projRange[0];
+    double maxProj = projRange[1];
 
     // 将范围适当扩展，以确保覆盖整个圆柱体区域（在两端各扩展一个 radius）
     double start = minProj - radius * radiusRatio;
@@ -158,7 +134,7 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
         double v[3] = {p[0] - point[0],
                        p[1] - point[1],
                        p[2] - point[2]};
-        double proj = v[0] * u[0] + v[1] * u[1] + v[2] * u[2];
+        double proj = ComputeProjection(v, u);
         double vLenSq = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
         double perpSq = vLenSq - proj * proj;
         if (perpSq <= radius * radius)
@@ -300,4 +276,39 @@ vtkSmartPointer<vtkIdList> PointNormalProcessor::GetUniquePointsInSpheres(
     }
 
     return resultIds;
+}
+
+double PointNormalProcessor::ComputeProjection(const double v[3], const double u[3]) const
+{
+    return v[0] * u[0] + v[1] * u[1] + v[2] * u[2];
+}
+
+std::array<double, 2> PointNormalProcessor::ComputeBoundingBoxProjectionRange(const double point[3], const double direction[3]) const
+{
+    double bounds[6];
+    processedPolyData->GetBounds(bounds);
+    
+    std::array<double, 2> range = {std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
+    // 定义包围盒8个角点
+    double corners[8][3] = {
+        {bounds[0], bounds[2], bounds[4]},
+        {bounds[1], bounds[2], bounds[4]},
+        {bounds[0], bounds[3], bounds[4]},
+        {bounds[1], bounds[3], bounds[4]},
+        {bounds[0], bounds[2], bounds[5]},
+        {bounds[1], bounds[2], bounds[5]},
+        {bounds[0], bounds[3], bounds[5]},
+        {bounds[1], bounds[3], bounds[5]}
+    };
+    
+    for (int i = 0; i < 8; i++)
+    {
+        double vec[3] = { corners[i][0] - point[0],
+                          corners[i][1] - point[1],
+                          corners[i][2] - point[2] };
+        double proj = ComputeProjection(vec, direction);
+        if (proj < range[0]) range[0] = proj;
+        if (proj > range[1]) range[1] = proj;
+    }
+    return range;
 }

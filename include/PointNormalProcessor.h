@@ -44,9 +44,9 @@ public:
 
     void FindPointsWithinRadius(double radius, const double* center, vtkIdList* resultIds) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double* point, const double* direction, double radius) const;
+    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double* point, const double* direction, double radius);
 
-    void FindPointsInCylinder(const double* point, const double* direction, double radius, vtkIdList* resultIds) const;
+    void FindPointsInCylinder(const double* point, const double* direction, double radius, vtkIdList* resultIds);
 
     void SetGlyph3DVisibility(bool visibility);
 
@@ -73,6 +73,8 @@ public:
         double sphereRadius);
 
 private:
+    double ComputeProjection(const double v[3], const double u[3]) const;
+    std::array<double, 2> ComputeBoundingBoxProjectionRange(const double point[3], const double direction[3]) const;
     void BuildLocator();
 
     double radiusRatio = 1.2247;
