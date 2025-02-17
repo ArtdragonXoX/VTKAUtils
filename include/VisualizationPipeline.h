@@ -1,5 +1,16 @@
 ﻿#pragma once
 
+#define PipelineMacro                                                    \
+	vtkActor *GetActor() const { return visualizationPipeline->GetActor(); }          \
+	void SetVisibility(bool arg) const { visualizationPipeline->SetVisibility(arg); } \
+	void SetOpacity(double arg) { visualizationPipeline->SetOpacity(arg); }           \
+	vtkProperty *GetProperty() const { return visualizationPipeline->GetProperty(); } \
+	bool GetVisibility() const { return visualizationPipeline->GetVisibility(); }     \
+	double GetOpacity() const { return visualizationPipeline->GetOpacity(); } \
+protected: \
+	std::unique_ptr<VisualizationPipeline> visualizationPipeline = std::make_unique<VisualizationPipeline>(); \
+public:
+
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -17,15 +28,15 @@ public:
 	~VisualizationPipeline() = default;
 
 	void SetInput(vtkSmartPointer<vtkPolyData> polyData);
-	void SetInputConnection(vtkAlgorithmOutput* port);
+	void SetInputConnection(vtkAlgorithmOutput *port);
 	vtkSmartPointer<vtkPolyData> GetOutput() const;
-	vtkAlgorithmOutput* GetInputPort() const;
+	vtkAlgorithmOutput *GetInputPort() const;
 	vtkSmartPointer<vtkPolyDataMapper> GetMapper();
 	vtkSmartPointer<vtkActor> GetActor() const;
-	vtkAlgorithmOutput* GetOutputPort() const;
+	vtkAlgorithmOutput *GetOutputPort() const;
 	void SetVisibility(bool arg) const;
 	void SetOpacity(double arg);
-	vtkProperty* GetProperty() const;
+	vtkProperty *GetProperty() const;
 
 	bool GetVisibility() const;
 	double GetOpacity() const;
@@ -35,20 +46,14 @@ public:
 
 	void ApplyAlgorithms();
 
-	void WriteSTL(const char* fn);
+	void WriteSTL(const char *fn);
 
 	void Update();
-private:
 
+private:
 	std::vector<vtkSmartPointer<vtkPolyDataAlgorithm>> algorithms;
 	vtkSmartPointer<vtkPolyData> polyData;
-	vtkAlgorithmOutput* inputPort;
+	vtkAlgorithmOutput *inputPort;
 	vtkSmartPointer<vtkPolyDataMapper> polyDataMapper;
 	vtkSmartPointer<vtkActor> actor;
 };
-
-template <typename DerivedType>
-DerivedType* VtkCastToDerived(vtkAlgorithm* algorithm) {
-	// 使用 dynamic_cast 进行类型转换
-	return dynamic_cast<DerivedType*>(algorithm);
-}
