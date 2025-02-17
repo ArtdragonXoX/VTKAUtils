@@ -4,7 +4,7 @@
 #include <vtkTriangleFilter.h>
 #include <vtkQuadricDecimation.h>
 #include <vtkPolyDataNormals.h>
-#include <vtkKdTreePointLocator.h>
+#include <AvtkKdTreePointLocator.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkArrowSource.h>
@@ -16,6 +16,9 @@
 
 #include <vector>
 #include <array>
+#include <cmath>
+#include <stdexcept>
+
 
 #include "VisualizationPipeline.h"
 
@@ -35,7 +38,7 @@ public:
 
     vtkDataArray* GetNormals() const { return processedPolyData->GetPointData()->GetNormals(); }
 
-    vtkSmartPointer<vtkKdTreePointLocator> GetPointLocator() const { return pointLocator; }
+    AvtkKdTreePointLocator* GetPointLocator() const { return pointLocator; }
 
     double* GetPoint(vtkIdType id) const;
     void GetPoint(vtkIdType id, double* point) const;
@@ -82,7 +85,7 @@ private:
     
     vtkSmartPointer<vtkPolyData> inputData;
     vtkSmartPointer<vtkPolyData> processedPolyData;
-    vtkSmartPointer<vtkKdTreePointLocator> pointLocator;
+    vtkSmartPointer<AvtkKdTreePointLocator> pointLocator;
     vtkSmartPointer<vtkArrowSource> arrowSource;
     vtkSmartPointer<vtkGlyph3D> glyph3D;
 

@@ -1,14 +1,8 @@
-#include <vtkPointData.h>
-#include <vector>
-#include <array>
-#include <cmath>
-#include <stdexcept>
-
 #include "PointNormalProcessor.h"
 
 PointNormalProcessor::PointNormalProcessor()
 {
-    pointLocator = vtkSmartPointer<vtkKdTreePointLocator>::New();
+    pointLocator = vtkSmartPointer<AvtkKdTreePointLocator>::New();
     arrowSource = vtkSmartPointer<vtkArrowSource>::New();
     glyph3D = vtkSmartPointer<vtkGlyph3D>::New();
     glyph3D->SetSourceConnection(arrowSource->GetOutputPort());
