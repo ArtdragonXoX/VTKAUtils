@@ -9,6 +9,7 @@ public:
     PipelineMacro
 
     CubeFrame();
+    CubeFrame(const double bounds[6]);
 
     void SetBounds(const double bounds[6]);
     void GetBounds(double *bounds) const;

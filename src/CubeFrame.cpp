@@ -8,6 +8,11 @@ CubeFrame::CubeFrame()
     visualizationPipeline->SetInput(polyData);
 }
 
+CubeFrame::CubeFrame(const double bounds[6]) : CubeFrame()
+{
+    SetBounds(bounds);
+}
+
 void CubeFrame::SetBounds(const double bounds[6])
 {
     for (int i = 0; i < 6; ++i)
