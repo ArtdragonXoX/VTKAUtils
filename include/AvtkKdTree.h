@@ -8,5 +8,5 @@ public:
     vtkTypeMacro(AvtkKdTree, vtkKdTree);
     static AvtkKdTree* New();
 
-    // Add your custom methods and properties here
+protected:
 };

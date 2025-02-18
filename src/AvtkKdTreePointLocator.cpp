@@ -33,21 +33,21 @@ vtkIdType AvtkKdTreePointLocator::FindClosestPoint(const double x[3])
 
 //------------------------------------------------------------------------------
 vtkIdType AvtkKdTreePointLocator::FindClosestPointWithinRadius(
-  double radius, const double x[3], double& dist2)
+    double radius, const double x[3], double &dist2)
 {
   this->BuildLocator();
   return this->KdTree->FindClosestPointWithinRadius(radius, x, dist2);
 }
 
 //------------------------------------------------------------------------------
-void AvtkKdTreePointLocator::FindClosestNPoints(int N, const double x[3], vtkIdList* result)
+void AvtkKdTreePointLocator::FindClosestNPoints(int N, const double x[3], vtkIdList *result)
 {
   this->BuildLocator();
   this->KdTree->FindClosestNPoints(N, x, result);
 }
 
 //------------------------------------------------------------------------------
-void AvtkKdTreePointLocator::FindPointsWithinRadius(double R, const double x[3], vtkIdList* result)
+void AvtkKdTreePointLocator::FindPointsWithinRadius(double R, const double x[3], vtkIdList *result)
 {
   this->BuildLocator();
   this->KdTree->FindPointsWithinRadius(R, x, result);
@@ -98,7 +98,7 @@ void AvtkKdTreePointLocator::BuildLocatorInternal()
   // Prepare
   this->FreeSearchStructure();
 
-  vtkPointSet* pointSet = vtkPointSet::SafeDownCast(this->GetDataSet());
+  vtkPointSet *pointSet = vtkPointSet::SafeDownCast(this->GetDataSet());
   if (!pointSet)
   {
     vtkErrorMacro("AvtkKdTreePointLocator requires a PointSet to build locator.");
@@ -112,14 +112,14 @@ void AvtkKdTreePointLocator::BuildLocatorInternal()
 }
 
 //------------------------------------------------------------------------------
-void AvtkKdTreePointLocator::GenerateRepresentation(int level, vtkPolyData* pd)
+void AvtkKdTreePointLocator::GenerateRepresentation(int level, vtkPolyData *pd)
 {
   this->BuildLocator();
   this->KdTree->GenerateRepresentation(level, pd);
 }
 
 //------------------------------------------------------------------------------
-void AvtkKdTreePointLocator::PrintSelf(ostream& os, vtkIndent indent)
+void AvtkKdTreePointLocator::PrintSelf(ostream &os, vtkIndent indent)
 {
   this->Superclass::PrintSelf(os, indent);
 
