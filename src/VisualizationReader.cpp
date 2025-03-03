@@ -4,7 +4,7 @@ VisualizationReader::VisualizationReader() : VisualizationPipeline()
 {
 }
 
-void VisualizationReader::ReadDicom(const char* dn)
+void VisualizationReader::ReadDicom(const char *dn)
 {
 	vtkNew<vtkDICOMImageReader> DICOMren;
 	this->reader = DICOMren;
@@ -14,7 +14,7 @@ void VisualizationReader::ReadDicom(const char* dn)
 	SetInputConnection(DICOMren->GetOutputPort());
 }
 
-void VisualizationReader::ReadStl(const char* fn)
+void VisualizationReader::ReadStl(const char *fn)
 {
 	vtkNew<vtkSTLReader> reader;
 	this->reader = reader;
@@ -23,12 +23,11 @@ void VisualizationReader::ReadStl(const char* fn)
 	SetInputConnection(reader->GetOutputPort());
 }
 
-void VisualizationReader::ReadDcm(const char* fn)
+void VisualizationReader::ReadDcm(const char *fn)
 {
 	vtkNew<vtkDICOMImageReader> DICOMren;
 	this->reader = DICOMren;
 	DICOMren->SetDirectoryName(fn);
 	DICOMren->Update();
 	SetInputConnection(DICOMren->GetOutputPort());
-
 }

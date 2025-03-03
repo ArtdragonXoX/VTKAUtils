@@ -6,9 +6,9 @@
 class CubeFrame
 {
 public:
-    PipelineMacro
+    PipelineMacro(pipline)
 
-    CubeFrame();
+        CubeFrame();
     CubeFrame(const double bounds[6]);
 
     void SetBounds(const double bounds[6]);
@@ -17,6 +17,7 @@ public:
     void Update();
 
 private:
+    std::unique_ptr<VisualizationPipeline> pipline = std::make_unique<VisualizationPipeline>();
     double bounds[6];
     vtkSmartPointer<vtkPoints> points;
     vtkSmartPointer<vtkCellArray> lines;

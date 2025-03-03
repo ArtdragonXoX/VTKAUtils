@@ -5,7 +5,7 @@ CubeFrame::CubeFrame()
     points = vtkSmartPointer<vtkPoints>::New();
     lines = vtkSmartPointer<vtkCellArray>::New();
     polyData = vtkSmartPointer<vtkPolyData>::New();
-    visualizationPipeline->SetInput(polyData);
+    pipline->SetInput(polyData);
 }
 
 CubeFrame::CubeFrame(const double bounds[6]) : CubeFrame()
