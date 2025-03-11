@@ -118,6 +118,11 @@ void AvtkKdTreePointLocator::GenerateRepresentation(int level, vtkPolyData *pd)
   this->KdTree->GenerateRepresentation(level, pd);
 }
 
+AvtkKdTree *AvtkKdTreePointLocator::GetKdTree()
+{
+  return KdTree;
+}
+
 //------------------------------------------------------------------------------
 void AvtkKdTreePointLocator::PrintSelf(ostream &os, vtkIndent indent)
 {

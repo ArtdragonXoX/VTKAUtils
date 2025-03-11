@@ -245,6 +245,12 @@ std::vector<std::array<double, 3>> PointNormalProcessor::GenerateSphereCenters(
     return centers;
 }
 
+std::vector<CubeFrame *> PointNormalProcessor::GetRegionsBoundariesByLevel(int level)
+{
+    auto kdTree = pointLocator->GetKdTree();
+    return kdTree->GetRegionsBoundariesByLevel(level);
+}
+
 vtkSmartPointer<vtkIdList> PointNormalProcessor::GetUniquePointsInSpheres(
     const std::vector<std::array<double, 3>> &sphereCenters,
     double sphereRadius) const

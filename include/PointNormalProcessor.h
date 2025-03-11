@@ -20,6 +20,8 @@
 #include <stdexcept>
 
 #include "VisualizationPipeline.h"
+#include "CubeFrame.h"
+#include "AvtkKdTree.h"
 
 class PointNormalProcessor
 {
@@ -73,6 +75,8 @@ public:
         const double end[3],
         double sphereInterval,
         double sphereRadius);
+
+    std::vector<CubeFrame *> GetRegionsBoundariesByLevel(int level);
 
 private:
     double ComputeProjection(const double v[3], const double u[3]) const;

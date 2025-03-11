@@ -57,6 +57,8 @@ public:
     void GenerateRepresentation(int level, vtkPolyData *pd) override;
     ///@}
 
+    AvtkKdTree *GetKdTree();
+
 protected:
     AvtkKdTreePointLocator();
     ~AvtkKdTreePointLocator() override;
