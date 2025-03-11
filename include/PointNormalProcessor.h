@@ -78,6 +78,8 @@ public:
 
     std::vector<CubeFrame *> GetRegionsBoundariesByLevel(int level);
 
+    std::vector<CubeFrame *> GetRegionBoundsByPoint(double x, double y, double z);
+
 private:
     double ComputeProjection(const double v[3], const double u[3]) const;
     std::array<double, 2> ComputeBoundingBoxProjectionRange(const double point[3], const double direction[3]) const;
