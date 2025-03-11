@@ -15,6 +15,16 @@ VisualizationPipeline::VisualizationPipeline(vtkPolyData *polyData)
 	SetInput(polyData);
 }
 
+void VisualizationPipeline::ScalarVisibilityOff()
+{
+	polyDataMapper->ScalarVisibilityOff();
+}
+
+void VisualizationPipeline::ScalarVisibilityOn()
+{
+	polyDataMapper->ScalarVisibilityOn();
+}
+
 void VisualizationPipeline::SetInput(vtkPolyData *polyData)
 {
 	this->polyData = polyData;
@@ -67,6 +77,11 @@ void VisualizationPipeline::SetOpacity(double arg)
 vtkProperty *VisualizationPipeline::GetProperty() const
 {
 	return GetActor()->GetProperty();
+}
+
+void VisualizationPipeline::SetColor(double r, double g, double b)
+{
+	actor->GetProperty()->SetColor(r, g, b);
 }
 
 bool VisualizationPipeline::GetVisibility() const

@@ -281,7 +281,7 @@ std::array<double, 2> PointNormalProcessor::ComputeBoundingBoxProjectionRange(co
 {
     double bounds[6];
     processedPolyData->GetBounds(bounds);
-    
+
     std::array<double, 2> range = {std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
     // 定义包围盒8个角点
     double corners[8][3] = {
@@ -292,17 +292,18 @@ std::array<double, 2> PointNormalProcessor::ComputeBoundingBoxProjectionRange(co
         {bounds[0], bounds[2], bounds[5]},
         {bounds[1], bounds[2], bounds[5]},
         {bounds[0], bounds[3], bounds[5]},
-        {bounds[1], bounds[3], bounds[5]}
-    };
-    
+        {bounds[1], bounds[3], bounds[5]}};
+
     for (int i = 0; i < 8; i++)
     {
-        double vec[3] = { corners[i][0] - point[0],
-                          corners[i][1] - point[1],
-                          corners[i][2] - point[2] };
+        double vec[3] = {corners[i][0] - point[0],
+                         corners[i][1] - point[1],
+                         corners[i][2] - point[2]};
         double proj = ComputeProjection(vec, direction);
-        if (proj < range[0]) range[0] = proj;
-        if (proj > range[1]) range[1] = proj;
+        if (proj < range[0])
+            range[0] = proj;
+        if (proj > range[1])
+            range[1] = proj;
     }
     return range;
 }

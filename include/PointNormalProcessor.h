@@ -19,37 +19,36 @@
 #include <cmath>
 #include <stdexcept>
 
-
 #include "VisualizationPipeline.h"
 
 class PointNormalProcessor
 {
 public:
     PointNormalProcessor();
-    
-    void SetInput(VisualizationPipeline* pipeline);
-    void SetInput(vtkPolyData* polyData);
 
-    void SetInputConnection(vtkAlgorithmOutput* port);
-    
+    void SetInput(VisualizationPipeline *pipeline);
+    void SetInput(vtkPolyData *polyData);
+
+    void SetInputConnection(vtkAlgorithmOutput *port);
+
     vtkSmartPointer<vtkPolyData> GetPolyData() const { return processedPolyData; }
 
-    vtkPointData* GetPointData() const { return processedPolyData->GetPointData(); }
+    vtkPointData *GetPointData() const { return processedPolyData->GetPointData(); }
 
-    vtkDataArray* GetNormals() const { return processedPolyData->GetPointData()->GetNormals(); }
+    vtkDataArray *GetNormals() const { return processedPolyData->GetPointData()->GetNormals(); }
 
-    AvtkKdTreePointLocator* GetPointLocator() const { return pointLocator; }
+    AvtkKdTreePointLocator *GetPointLocator() const { return pointLocator; }
 
-    double* GetPoint(vtkIdType id) const;
-    void GetPoint(vtkIdType id, double* point) const;
+    double *GetPoint(vtkIdType id) const;
+    void GetPoint(vtkIdType id, double *point) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double* center) const;
+    vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double *center) const;
 
-    void FindPointsWithinRadius(double radius, const double* center, vtkIdList* resultIds) const;
+    void FindPointsWithinRadius(double radius, const double *center, vtkIdList *resultIds) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double* point, const double* direction, double radius);
+    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double *point, const double *direction, double radius);
 
-    void FindPointsInCylinder(const double* point, const double* direction, double radius, vtkIdList* resultIds);
+    void FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds);
 
     void SetGlyph3DVisibility(bool visibility);
 
@@ -66,7 +65,7 @@ public:
     void Update();
 
     vtkSmartPointer<vtkIdList> GetUniquePointsInSpheres(
-        const std::vector<std::array<double, 3>>& sphereCenters,
+        const std::vector<std::array<double, 3>> &sphereCenters,
         double sphereRadius) const;
 
     static std::vector<std::array<double, 3>> GenerateSphereCenters(
@@ -82,7 +81,7 @@ private:
 
     double radiusRatio = 1.2247;
     double intervalRatio = 1.4142;
-    
+
     vtkSmartPointer<vtkPolyData> inputData;
     vtkSmartPointer<vtkPolyData> processedPolyData;
     vtkSmartPointer<AvtkKdTreePointLocator> pointLocator;
