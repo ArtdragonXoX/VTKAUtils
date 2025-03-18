@@ -2,7 +2,6 @@
 
 namespace AUtils
 {
-    void GetCornersFromBounds(const double *bounds, double **corners);
 
     const int cubeIndices[8][3] = {
         {0, 2, 4}, // xmin, ymin, zmin
@@ -27,4 +26,23 @@ namespace AUtils
         {3, 7} // 垂直边
     };
 
-}
+    void GetCornersFromBounds(const double *bounds, double **corners)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            corners[i][0] = bounds[AUtils::cubeIndices[i][0]]; // x
+            corners[i][1] = bounds[AUtils::cubeIndices[i][1]]; // y
+            corners[i][2] = bounds[AUtils::cubeIndices[i][2]]; // z
+        }
+    }
+
+    void IdTypeArrayToIdList(vtkIdTypeArray *idTypeArray, vtkIdList *idList)
+    {
+        idList->SetNumberOfIds(idTypeArray->GetNumberOfTuples());
+        for (int i = 0; i < idTypeArray->GetNumberOfTuples(); ++i)
+        {
+            idList->SetId(i, idTypeArray->GetValue(i));
+        }
+        idList->Squeeze();
+    }
+};
