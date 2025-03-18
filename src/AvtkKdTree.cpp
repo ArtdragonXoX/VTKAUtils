@@ -90,6 +90,13 @@ std::vector<CubeFrame *> AvtkKdTree::GetRegionBoundsByPoint(double x, double y, 
     return frames;
 }
 
+void AvtkKdTree::FindPointsWithInArea(double *area, vtkIdList *ids)
+{
+    vtkNew<vtkIdTypeArray> idList;
+    this->vtkKdTree::FindPointsInArea(area, idList);
+    AUtils::IdTypeArrayToIdList(idList, ids);
+}
+
 std::vector<vtkKdNode *> AvtkKdTree::GetPathFromRootToNode(vtkKdNode *target) const
 {
     return this->getPath(this->Top, target);

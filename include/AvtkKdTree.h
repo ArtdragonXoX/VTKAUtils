@@ -52,6 +52,8 @@ public:
      */
     std::vector<CubeFrame *> GetRegionBoundsByPoint(double x, double y, double z);
 
+    void FindPointsWithInArea(double *area, vtkIdList *ids);
+
 protected:
     /**
      * 统计指定层级下二叉树节点的数量。
@@ -61,7 +63,7 @@ protected:
      * @param targetLevel 目标层级，统计该层级下的节点数量。
      * @return 返回目标层级下节点的数量。
      */
-    int CountNodesAtLevel(vtkKdNode *, int, int);
+    int CountNodesAtLevel(vtkKdNode *, int currentLevel, int targetLevel);
 
     /**
      * 获取指定节点在Kd树中的层级。

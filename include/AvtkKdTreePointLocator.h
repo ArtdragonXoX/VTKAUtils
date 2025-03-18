@@ -46,6 +46,8 @@ public:
      */
     void FindPointsWithinRadius(double R, const double x[3], vtkIdList *result) override;
 
+    void FindPointsWithinArea(double *area, vtkIdList *result);
+
     ///@{
     /**
      * See vtkLocator interface documentation.

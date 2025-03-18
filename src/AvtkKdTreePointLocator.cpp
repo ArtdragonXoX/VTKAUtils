@@ -53,6 +53,12 @@ void AvtkKdTreePointLocator::FindPointsWithinRadius(double R, const double x[3],
   this->KdTree->FindPointsWithinRadius(R, x, result);
 }
 
+void AvtkKdTreePointLocator::FindPointsWithinArea(double *area, vtkIdList *result)
+{
+  this->BuildLocator();
+  this->KdTree->FindPointsWithInArea(area, result);
+}
+
 //------------------------------------------------------------------------------
 void AvtkKdTreePointLocator::FreeSearchStructure()
 {
