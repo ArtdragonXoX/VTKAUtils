@@ -4,7 +4,7 @@
 #include <vtkTriangleFilter.h>
 #include <vtkQuadricDecimation.h>
 #include <vtkPolyDataNormals.h>
-#include <vtkKdTreePointLocator.h>
+#include <AvtkKdTreePointLocator.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkArrowSource.h>
@@ -16,37 +16,43 @@
 
 #include <vector>
 #include <array>
+#include <cmath>
+#include <stdexcept>
 
 #include "VisualizationPipeline.h"
+#include "CubeFrame.h"
+#include "AvtkKdTree.h"
 
 class PointNormalProcessor
 {
 public:
     PointNormalProcessor();
-    
-    void SetInput(VisualizationPipeline* pipeline);
-    void SetInput(vtkPolyData* polyData);
 
-    void SetInputConnection(vtkAlgorithmOutput* port);
-    
+    void SetInput(VisualizationPipeline *pipeline);
+    void SetInput(vtkPolyData *polyData);
+
+    void SetInputConnection(vtkAlgorithmOutput *port);
+
     vtkSmartPointer<vtkPolyData> GetPolyData() const { return processedPolyData; }
 
-    vtkPointData* GetPointData() const { return processedPolyData->GetPointData(); }
+    vtkPointData *GetPointData() const { return processedPolyData->GetPointData(); }
 
-    vtkDataArray* GetNormals() const { return processedPolyData->GetPointData()->GetNormals(); }
+    vtkDataArray *GetNormals() const { return processedPolyData->GetPointData()->GetNormals(); }
 
-    vtkSmartPointer<vtkKdTreePointLocator> GetPointLocator() const { return pointLocator; }
+    AvtkKdTreePointLocator *GetPointLocator() const { return pointLocator; }
 
-    double* GetPoint(vtkIdType id) const;
-    void GetPoint(vtkIdType id, double* point) const;
+    double *GetPoint(vtkIdType id) const;
+    void GetPoint(vtkIdType id, double *point) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double* center) const;
+    vtkSmartPointer<vtkIdList> FindPointsWithinRadius(double radius, const double *center) const;
 
-    void FindPointsWithinRadius(double radius, const double* center, vtkIdList* resultIds) const;
+    void FindPointsWithinRadius(double radius, const double *center, vtkIdList *resultIds) const;
 
-    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double* point, const double* direction, double radius);
+    vtkSmartPointer<vtkIdList> FindPointsInCylinder(const double *point, const double *direction, double radius);
 
-    void FindPointsInCylinder(const double* point, const double* direction, double radius, vtkIdList* resultIds);
+    void FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds);
+
+    vtkIdType FindClosestPoint(const double x[3]) const;
 
     void SetGlyph3DVisibility(bool visibility);
 
@@ -60,10 +66,12 @@ public:
     double GetRadiusRatio() const { return radiusRatio; }
     double GetIntervalRatio() const { return intervalRatio; }
 
+    double GetDistance(const double x[3]) const;
+
     void Update();
 
     vtkSmartPointer<vtkIdList> GetUniquePointsInSpheres(
-        const std::vector<std::array<double, 3>>& sphereCenters,
+        const std::vector<std::array<double, 3>> &sphereCenters,
         double sphereRadius) const;
 
     static std::vector<std::array<double, 3>> GenerateSphereCenters(
@@ -72,6 +80,10 @@ public:
         double sphereInterval,
         double sphereRadius);
 
+    std::vector<CubeFrame *> GetRegionsBoundariesByLevel(int level);
+
+    std::vector<CubeFrame *> GetRegionBoundsByPoint(double x, double y, double z);
+
 private:
     double ComputeProjection(const double v[3], const double u[3]) const;
     std::array<double, 2> ComputeBoundingBoxProjectionRange(const double point[3], const double direction[3]) const;
@@ -79,10 +91,10 @@ private:
 
     double radiusRatio = 1.2247;
     double intervalRatio = 1.4142;
-    
+
     vtkSmartPointer<vtkPolyData> inputData;
     vtkSmartPointer<vtkPolyData> processedPolyData;
-    vtkSmartPointer<vtkKdTreePointLocator> pointLocator;
+    vtkSmartPointer<AvtkKdTreePointLocator> pointLocator;
     vtkSmartPointer<vtkArrowSource> arrowSource;
     vtkSmartPointer<vtkGlyph3D> glyph3D;
 

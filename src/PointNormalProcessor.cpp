@@ -1,14 +1,8 @@
-#include <vtkPointData.h>
-#include <vector>
-#include <array>
-#include <cmath>
-#include <stdexcept>
-
 #include "PointNormalProcessor.h"
 
 PointNormalProcessor::PointNormalProcessor()
 {
-    pointLocator = vtkSmartPointer<vtkKdTreePointLocator>::New();
+    pointLocator = vtkSmartPointer<AvtkKdTreePointLocator>::New();
     arrowSource = vtkSmartPointer<vtkArrowSource>::New();
     glyph3D = vtkSmartPointer<vtkGlyph3D>::New();
     glyph3D->SetSourceConnection(arrowSource->GetOutputPort());
@@ -142,6 +136,11 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 }
 
+vtkIdType PointNormalProcessor::FindClosestPoint(const double x[3]) const
+{
+    return pointLocator->FindClosestPoint(x);
+}
+
 void PointNormalProcessor::SetGlyph3DVisibility(bool visibility)
 {
     arrowPipeline->SetVisibility(visibility);
@@ -166,6 +165,21 @@ void PointNormalProcessor::SetRadiusRatio(double ratio)
 void PointNormalProcessor::SetIntervalRatio(double ratio)
 {
     intervalRatio = ratio;
+}
+
+double PointNormalProcessor::GetDistance(const double x[3]) const
+{
+    auto id = FindClosestPoint(x);
+    auto normal = processedPolyData->GetPointData()->GetNormals()->GetTuple3(id);
+    auto point = processedPolyData->GetPoint(id);
+    auto distance = std::sqrt(vtkMath::Distance2BetweenPoints(x, point));
+
+    // 计算向量差
+    double vec[3] = {x[0] - point[0], x[1] - point[1], x[2] - point[2]};
+    if (vtkMath::Dot(normal, vec) < 0)
+        distance = -distance;
+
+    return distance;
 }
 
 void PointNormalProcessor::Update()
@@ -251,6 +265,18 @@ std::vector<std::array<double, 3>> PointNormalProcessor::GenerateSphereCenters(
     return centers;
 }
 
+std::vector<CubeFrame *> PointNormalProcessor::GetRegionsBoundariesByLevel(int level)
+{
+    auto kdTree = pointLocator->GetKdTree();
+    return kdTree->GetRegionsBoundariesByLevel(level);
+}
+
+std::vector<CubeFrame *> PointNormalProcessor::GetRegionBoundsByPoint(double x, double y, double z)
+{
+    auto kdTree = pointLocator->GetKdTree();
+    return kdTree->GetRegionBoundsByPoint(x, y, z);
+}
+
 vtkSmartPointer<vtkIdList> PointNormalProcessor::GetUniquePointsInSpheres(
     const std::vector<std::array<double, 3>> &sphereCenters,
     double sphereRadius) const
@@ -287,7 +313,7 @@ std::array<double, 2> PointNormalProcessor::ComputeBoundingBoxProjectionRange(co
 {
     double bounds[6];
     processedPolyData->GetBounds(bounds);
-    
+
     std::array<double, 2> range = {std::numeric_limits<double>::max(), -std::numeric_limits<double>::max()};
     // 定义包围盒8个角点
     double corners[8][3] = {
@@ -298,17 +324,18 @@ std::array<double, 2> PointNormalProcessor::ComputeBoundingBoxProjectionRange(co
         {bounds[0], bounds[2], bounds[5]},
         {bounds[1], bounds[2], bounds[5]},
         {bounds[0], bounds[3], bounds[5]},
-        {bounds[1], bounds[3], bounds[5]}
-    };
-    
+        {bounds[1], bounds[3], bounds[5]}};
+
     for (int i = 0; i < 8; i++)
     {
-        double vec[3] = { corners[i][0] - point[0],
-                          corners[i][1] - point[1],
-                          corners[i][2] - point[2] };
+        double vec[3] = {corners[i][0] - point[0],
+                         corners[i][1] - point[1],
+                         corners[i][2] - point[2]};
         double proj = ComputeProjection(vec, direction);
-        if (proj < range[0]) range[0] = proj;
-        if (proj > range[1]) range[1] = proj;
+        if (proj < range[0])
+            range[0] = proj;
+        if (proj > range[1])
+            range[1] = proj;
     }
     return range;
 }

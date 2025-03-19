@@ -7,7 +7,7 @@ VisualizationPipeline::VisualizationPipeline()
 	actor->SetMapper(polyDataMapper);
 }
 
-VisualizationPipeline::VisualizationPipeline(vtkSmartPointer<vtkPolyData> polyData)
+VisualizationPipeline::VisualizationPipeline(vtkPolyData *polyData)
 {
 	polyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	actor = vtkSmartPointer<vtkActor>::New();
@@ -15,43 +15,51 @@ VisualizationPipeline::VisualizationPipeline(vtkSmartPointer<vtkPolyData> polyDa
 	SetInput(polyData);
 }
 
-void VisualizationPipeline::SetInput(vtkSmartPointer<vtkPolyData> polyData)
+void VisualizationPipeline::ScalarVisibilityOff()
+{
+	polyDataMapper->ScalarVisibilityOff();
+}
+
+void VisualizationPipeline::ScalarVisibilityOn()
+{
+	polyDataMapper->ScalarVisibilityOn();
+}
+
+void VisualizationPipeline::SetInput(vtkPolyData *polyData)
 {
 	this->polyData = polyData;
 	inputPort = nullptr;
 	polyDataMapper->SetInputData(polyData);
 }
 
-void VisualizationPipeline::SetInputConnection(vtkAlgorithmOutput* port)
+void VisualizationPipeline::SetInputConnection(vtkAlgorithmOutput *port)
 {
 	polyData = nullptr;
 	inputPort = port;
 	polyDataMapper->SetInputConnection(inputPort);
 }
 
-vtkSmartPointer<vtkPolyData> VisualizationPipeline::GetOutput() const
+vtkPolyData *VisualizationPipeline::GetOutput() const
 {
-	if (polyData)
-		return polyData;
-	return polyDataMapper->GetInput();
+	return polyData;
 }
 
-vtkAlgorithmOutput* VisualizationPipeline::GetInputPort() const
+vtkAlgorithmOutput *VisualizationPipeline::GetInputPort() const
 {
 	return inputPort;
 }
 
-vtkSmartPointer<vtkPolyDataMapper> VisualizationPipeline::GetMapper()
+vtkPolyDataMapper *VisualizationPipeline::GetMapper()
 {
 	return polyDataMapper;
 }
 
-vtkSmartPointer<vtkActor> VisualizationPipeline::GetActor() const
+vtkActor *VisualizationPipeline::GetActor() const
 {
 	return actor;
 }
 
-vtkAlgorithmOutput* VisualizationPipeline::GetOutputPort() const
+vtkAlgorithmOutput *VisualizationPipeline::GetOutputPort() const
 {
 	return polyDataMapper->GetInputConnection(0, 0);
 }
@@ -66,9 +74,14 @@ void VisualizationPipeline::SetOpacity(double arg)
 	actor->GetProperty()->SetOpacity(arg);
 }
 
-vtkProperty* VisualizationPipeline::GetProperty() const
+vtkProperty *VisualizationPipeline::GetProperty() const
 {
 	return GetActor()->GetProperty();
+}
+
+void VisualizationPipeline::SetColor(double r, double g, double b)
+{
+	actor->GetProperty()->SetColor(r, g, b);
 }
 
 bool VisualizationPipeline::GetVisibility() const
@@ -81,19 +94,21 @@ double VisualizationPipeline::GetOpacity() const
 	return actor->GetProperty()->GetOpacity();
 }
 
-void VisualizationPipeline::AddAlgorithm(vtkSmartPointer<vtkPolyDataAlgorithm> algorithm)
+void VisualizationPipeline::AddAlgorithm(vtkPolyDataAlgorithm *algorithm)
 {
 	algorithms.push_back(algorithm);
 	ApplyAlgorithms();
 }
 
-vtkSmartPointer<vtkPolyDataAlgorithm> VisualizationPipeline::GetAlgorithm(int index) const
+vtkPolyDataAlgorithm *VisualizationPipeline::GetAlgorithm(int index) const
 {
 	return algorithms[index];
 }
 
-void VisualizationPipeline::ApplyAlgorithms() {
-	if (algorithms.empty()) {
+void VisualizationPipeline::ApplyAlgorithms()
+{
+	if (algorithms.empty())
+	{
 		if (polyData == nullptr)
 			polyDataMapper->SetInputConnection(inputPort);
 		else
@@ -106,7 +121,8 @@ void VisualizationPipeline::ApplyAlgorithms() {
 	else
 		algorithms[0]->SetInputData(polyData);
 
-	for (size_t i = 1; i < algorithms.size(); ++i) {
+	for (size_t i = 1; i < algorithms.size(); ++i)
+	{
 		algorithms[i]->SetInputConnection(algorithms[i - 1]->GetOutputPort());
 	}
 
@@ -126,7 +142,7 @@ void VisualizationPipeline::WriteSTL(const char *fn)
 
 void VisualizationPipeline::Update()
 {
-	for (auto& algorithm : algorithms)
+	for (auto &algorithm : algorithms)
 	{
 		algorithm->Update();
 	}
