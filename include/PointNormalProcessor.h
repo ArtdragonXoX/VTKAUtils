@@ -52,6 +52,8 @@ public:
 
     void FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds);
 
+    vtkIdType FindClosestPoint(const double x[3]) const;
+
     void SetGlyph3DVisibility(bool visibility);
 
     void SetGlyph3DScaleFactor(double scaleFactor);
@@ -63,6 +65,8 @@ public:
 
     double GetRadiusRatio() const { return radiusRatio; }
     double GetIntervalRatio() const { return intervalRatio; }
+
+    double GetDistance(const double x[3]) const;
 
     void Update();
 

@@ -136,6 +136,11 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 }
 
+vtkIdType PointNormalProcessor::FindClosestPoint(const double x[3]) const
+{
+    return pointLocator->FindClosestPoint(x);
+}
+
 void PointNormalProcessor::SetGlyph3DVisibility(bool visibility)
 {
     arrowPipeline->SetVisibility(visibility);
@@ -160,6 +165,21 @@ void PointNormalProcessor::SetRadiusRatio(double ratio)
 void PointNormalProcessor::SetIntervalRatio(double ratio)
 {
     intervalRatio = ratio;
+}
+
+double PointNormalProcessor::GetDistance(const double x[3]) const
+{
+    auto id = FindClosestPoint(x);
+    auto normal = processedPolyData->GetPointData()->GetNormals()->GetTuple3(id);
+    auto point = processedPolyData->GetPoint(id);
+    auto distance = std::sqrt(vtkMath::Distance2BetweenPoints(x, point));
+
+    // 计算向量差
+    double vec[3] = {x[0] - point[0], x[1] - point[1], x[2] - point[2]};
+    if (vtkMath::Dot(normal, vec) < 0)
+        distance = -distance;
+
+    return distance;
 }
 
 void PointNormalProcessor::Update()
