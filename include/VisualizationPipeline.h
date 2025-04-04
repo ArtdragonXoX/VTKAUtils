@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #define PipelineMacro(class_name)                                                   \
+public:                                                                             \
 	vtkActor *GetActor() const { return class_name->GetActor(); }                   \
 	void SetVisibility(bool arg) const { class_name->SetVisibility(arg); }          \
 	void SetOpacity(double arg) { class_name->SetOpacity(arg); }                    \
@@ -11,9 +12,7 @@
 	vtkPolyData *GetOutput() const { return class_name->GetOutput(); }              \
 	vtkAlgorithmOutput *GetInputPort() const { return class_name->GetInputPort(); } \
 	void ScalarVisibilityOff() { class_name->ScalarVisibilityOff(); }               \
-	void ScalarVisibilityOn() { class_name->ScalarVisibilityOn(); }                 \
-                                                                                    \
-public:
+	void ScalarVisibilityOn() { class_name->ScalarVisibilityOn(); }
 
 #include <vtkSmartPointer.h>
 #include <vtkPolyData.h>
