@@ -52,6 +52,8 @@ public:
 
     void FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds);
 
+    void FindPointsWithInArea(double *area, vtkIdList *ids);
+
     vtkIdType FindClosestPoint(const double x[3]) const;
 
     void SetGlyph3DVisibility(bool visibility);

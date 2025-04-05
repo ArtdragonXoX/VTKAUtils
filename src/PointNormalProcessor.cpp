@@ -136,6 +136,11 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 }
 
+void PointNormalProcessor::FindPointsWithInArea(double *area, vtkIdList *ids)
+{
+    pointLocator->FindPointsWithinArea(area, ids);
+}
+
 vtkIdType PointNormalProcessor::FindClosestPoint(const double x[3]) const
 {
     return pointLocator->FindClosestPoint(x);
