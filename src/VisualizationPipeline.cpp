@@ -79,6 +79,52 @@ vtkProperty *VisualizationPipeline::GetProperty() const
 	return GetActor()->GetProperty();
 }
 
+void VisualizationPipeline::GetBounds(double bounds[6])
+{
+	// 如果有算法链，从最后一个算法的输出获取边界
+	if (!algorithms.empty())
+	{
+		vtkPolyData *output = vtkPolyData::SafeDownCast(algorithms.back()->GetOutput());
+		if (output)
+		{
+			output->GetBounds(bounds);
+			return;
+		}
+	}
+
+	// 如果没有算法链或获取失败，尝试从polyData获取边界
+	if (polyData)
+	{
+		polyData->GetBounds(bounds);
+		return;
+	}
+
+	if (inputPort && inputPort->GetProducer())
+	{
+		// 先更新生产者以确保获取最新数据
+		inputPort->GetProducer()->Update();
+		vtkPolyData *output = vtkPolyData::SafeDownCast(inputPort->GetProducer()->GetOutputDataObject(0));
+		if (output)
+		{
+			output->GetBounds(bounds);
+			return;
+		}
+	}
+
+	// 如果polyData也不存在，尝试从actor获取边界
+	if (actor)
+	{
+		actor->GetBounds(bounds);
+		return;
+	}
+
+	// 如果所有方法都失败，设置默认边界值
+	for (int i = 0; i < 6; ++i)
+	{
+		bounds[i] = 0.0;
+	}
+}
+
 void VisualizationPipeline::SetColor(double r, double g, double b)
 {
 	actor->GetProperty()->SetColor(r, g, b);

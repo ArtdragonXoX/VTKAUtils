@@ -30,6 +30,11 @@ void CubeFrame::GetBounds(double *bounds) const
     }
 }
 
+void CubeFrame::SetLineWidth(double width)
+{
+    pipline->GetActor()->GetProperty()->SetLineWidth(width);
+}
+
 void CubeFrame::Update()
 {
     const double &xmin = bounds[0];
@@ -38,6 +43,9 @@ void CubeFrame::Update()
     const double &ymax = bounds[3];
     const double &zmin = bounds[4];
     const double &zmax = bounds[5];
+
+    // 清空points
+    points->Reset();
 
     // 生成立方体的8个顶点
     points->InsertNextPoint(xmin, ymin, zmin); // 点0
@@ -49,6 +57,8 @@ void CubeFrame::Update()
     points->InsertNextPoint(xmax, ymax, zmax); // 点6
     points->InsertNextPoint(xmin, ymax, zmax); // 点7
 
+    // 清空lines
+    lines->Reset();
     // 添加所有边
     for (int i = 0; i < 12; ++i)
     {

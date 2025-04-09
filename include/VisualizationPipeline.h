@@ -7,6 +7,7 @@ public:                                                                         
 	void SetOpacity(double arg) { class_name->SetOpacity(arg); }                    \
 	vtkProperty *GetProperty() const { return class_name->GetProperty(); }          \
 	bool GetVisibility() const { return class_name->GetVisibility(); }              \
+	void GetBounds(double bounds[6]) { class_name->GetBounds(bounds); }             \
 	double GetOpacity() const { return class_name->GetOpacity(); }                  \
 	void SetColor(double r, double g, double b) { class_name->SetColor(r, g, b); }  \
 	vtkPolyData *GetOutput() const { return class_name->GetOutput(); }              \
@@ -44,6 +45,8 @@ public:
 	void SetVisibility(bool arg) const;
 	void SetOpacity(double arg);
 	vtkProperty *GetProperty() const;
+
+	void GetBounds(double bounds[6]);
 
 	void SetColor(double r, double g, double b);
 

@@ -13,6 +13,7 @@ public:
 
     void SetBounds(const double bounds[6]);
     void GetBounds(double *bounds) const;
+    void SetLineWidth(double width);
 
     void Update();
 
