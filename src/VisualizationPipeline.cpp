@@ -125,6 +125,50 @@ void VisualizationPipeline::GetBounds(double bounds[6])
 	}
 }
 
+void VisualizationPipeline::GetOBB(double corner[8][3])
+{
+	if (!algorithms.empty())
+	{
+		vtkDataSet *dataSet = vtkPolyData::SafeDownCast(algorithms.back()->GetOutput());
+		if (dataSet)
+		{
+			AUtils::GetOBB(dataSet, corner);
+			return;
+		}
+	}
+
+	if (polyData)
+	{
+		AUtils::GetOBB(polyData, corner);
+		return;
+	}
+
+	if (inputPort && inputPort->GetProducer())
+	{
+		inputPort->GetProducer()->Update();
+		vtkDataSet *dataSet = vtkPolyData::SafeDownCast(inputPort->GetProducer()->GetOutputDataObject(0));
+		if (dataSet)
+		{
+			AUtils::GetOBB(dataSet, corner);
+			return;
+		}
+	}
+
+	if (actor)
+	{
+		vtkDataSet *dataSet = actor->GetMapper()->GetInput();
+		AUtils::GetOBB(dataSet, corner);
+		return;
+	}
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			corner[i][j] = 0.0;
+		}
+	}
+}
+
 void VisualizationPipeline::SetColor(double r, double g, double b)
 {
 	actor->GetProperty()->SetColor(r, g, b);

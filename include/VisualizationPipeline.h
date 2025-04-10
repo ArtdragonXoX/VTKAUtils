@@ -8,6 +8,7 @@ public:                                                                         
 	vtkProperty *GetProperty() const { return class_name->GetProperty(); }          \
 	bool GetVisibility() const { return class_name->GetVisibility(); }              \
 	void GetBounds(double bounds[6]) { class_name->GetBounds(bounds); }             \
+	void GetOBB(double corner[8][3]) { class_name->GetOBB(corner); }                \
 	double GetOpacity() const { return class_name->GetOpacity(); }                  \
 	void SetColor(double r, double g, double b) { class_name->SetColor(r, g, b); }  \
 	vtkPolyData *GetOutput() const { return class_name->GetOutput(); }              \
@@ -23,6 +24,8 @@ public:                                                                         
 #include <vtkPolyDataAlgorithm.h>
 #include <vtkSTLWriter.h>
 #include <vtkAlgorithmOutput.h>
+
+#include "AUtils.h"
 
 class VisualizationPipeline
 {
@@ -47,6 +50,8 @@ public:
 	vtkProperty *GetProperty() const;
 
 	void GetBounds(double bounds[6]);
+
+	void GetOBB(double corner[8][3]);
 
 	void SetColor(double r, double g, double b);
 
