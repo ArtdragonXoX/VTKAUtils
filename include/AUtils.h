@@ -1,6 +1,8 @@
 #pragma once
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
+#include <vtkDataSet.h>
+#include <vtkOBBTree.h>
 
 namespace AUtils
 {
@@ -17,11 +19,11 @@ namespace AUtils
     };
 
     const int cubeEdges[12][2] = {
-        {0, 1}, {1, 2}, {2, 3}, {3, 0}, // 底面
+        {0, 1}, {1, 3}, {0, 2}, {2, 3}, // 底面
         {4, 5},
-        {5, 6},
-        {6, 7},
-        {7, 4}, // 顶面
+        {5, 7},
+        {4, 6},
+        {6, 7}, // 顶面
         {0, 4},
         {1, 5},
         {2, 6},
@@ -36,4 +38,6 @@ namespace AUtils
 
     template <typename... Arrays>
     void GetMeanNormal(double *normal, vtkDataArray *firstArray, Arrays *...arrays);
+
+    void GetOBB(vtkDataSet *data, double corner[3], double axes[8][3], double size[3]);
 };

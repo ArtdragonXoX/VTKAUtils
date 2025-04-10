@@ -48,3 +48,12 @@ void AUtils::GetMeanNormal(double *normal, vtkDataArray *firstArray, Arrays *...
         GetMeanNormal(normal, arrays...);
     }
 }
+
+void AUtils::GetOBB(vtkDataSet *data, double corner[3], double axes[3][3], double size[3])
+{
+    vtkNew<vtkOBBTree> obbTree;
+    obbTree->SetDataSet(data);
+    obbTree->SetMaxLevel(1);
+    obbTree->BuildLocator();
+    obbTree->ComputeOBB(data, corner, axes[0], axes[1], axes[2], size);
+}
