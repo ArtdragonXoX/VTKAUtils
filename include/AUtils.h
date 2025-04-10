@@ -31,4 +31,9 @@ namespace AUtils
     void GetCornersFromBounds(const double *bounds, double **corners);
 
     void IdTypeArrayToIdList(vtkIdTypeArray *idTypeArray, vtkIdList *idList);
+
+    void GetMeanNormal(double *normal, vtkDataArray *array);
+
+    template <typename... Arrays>
+    void GetMeanNormal(double *normal, vtkDataArray *firstArray, Arrays *...arrays);
 };
