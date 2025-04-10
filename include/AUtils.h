@@ -2,7 +2,8 @@
 #include <vtkIdList.h>
 #include <vtkIdTypeArray.h>
 #include <vtkDataSet.h>
-#include <vtkOBBTree.h>
+
+#include "OBB.h"
 
 namespace AUtils
 {
@@ -39,5 +40,5 @@ namespace AUtils
     template <typename... Arrays>
     void GetMeanNormal(double *normal, vtkDataArray *firstArray, Arrays *...arrays);
 
-    void GetOBB(vtkDataSet *data, double corner[3], double axes[8][3], double size[3]);
+    void GetOBB(vtkDataSet *data, double corner[8][3]);
 };

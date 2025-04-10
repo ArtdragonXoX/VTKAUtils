@@ -49,11 +49,19 @@ void AUtils::GetMeanNormal(double *normal, vtkDataArray *firstArray, Arrays *...
     }
 }
 
-void AUtils::GetOBB(vtkDataSet *data, double corner[3], double axes[3][3], double size[3])
+void AUtils::GetOBB(vtkDataSet *data, double corner[8][3])
 {
-    vtkNew<vtkOBBTree> obbTree;
-    obbTree->SetDataSet(data);
-    obbTree->SetMaxLevel(1);
-    obbTree->BuildLocator();
-    obbTree->ComputeOBB(data, corner, axes[0], axes[1], axes[2], size);
+    std::vector<Vector3> points;
+    for (int i = 0; i < data->GetNumberOfPoints(); ++i)
+    {
+        double *point = data->GetPoint(i);
+        points.push_back(Vector3(point[0], point[1], point[2]));
+    }
+    OBB obb = computeOBB(points);
+    for (int i = 0; i < 8; ++i)
+    {
+        corner[i][0] = obb[i].x;
+        corner[i][1] = obb[i].y;
+        corner[i][2] = obb[i].z;
+    }
 }
