@@ -52,7 +52,9 @@ public:
      */
     std::vector<CubeFrame *> GetRegionBoundsByPoint(double x, double y, double z);
 
-    void FindPointsWithInArea(double *area, vtkIdList *ids);
+    void FindPointsInArea(double *area, vtkIdList *ids);
+
+    void FindPointsInCuboid(double cuboid[8][3], vtkIdList *ids);
 
 protected:
     /**
@@ -99,4 +101,6 @@ protected:
     /// \param target 需要查找的目标节点。
     /// \return 返回从current到target的节点路径列表。若路径不存在或current为nullptr，返回空列表。
     std::vector<vtkKdNode *> getPath(vtkKdNode *current, vtkKdNode *target) const;
+
+    vtkPointSet *pointSet;
 };

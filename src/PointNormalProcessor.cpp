@@ -136,14 +136,41 @@ void PointNormalProcessor::FindPointsInCylinder(const double *point, const doubl
     }
 }
 
-void PointNormalProcessor::FindPointsWithInArea(double *area, vtkIdList *ids)
+void PointNormalProcessor::FindPointsInArea(double *area, vtkIdList *ids)
 {
     pointLocator->FindPointsWithinArea(area, ids);
+}
+
+void PointNormalProcessor::FindPointsInCuboid(double cuboid[8][3], vtkIdList *ids)
+{
+    pointLocator->FindPointsWithinCuboid(cuboid, ids);
 }
 
 vtkIdType PointNormalProcessor::FindClosestPoint(const double x[3]) const
 {
     return pointLocator->FindClosestPoint(x);
+}
+
+void PointNormalProcessor::GetMeanNormal(vtkIdList *ids, double *normal)
+{
+    auto normals = GetNormals();
+    normal[0] = 0.0;
+    normal[1] = 0.0;
+    normal[2] = 0.0;
+    for (const auto &id : *ids)
+    {
+        double normal_[3];
+        normals->GetTuple(id, normal_);
+        for (int i = 0; i < 3; i++)
+        {
+            normal[i] += normal_[i];
+        }
+    }
+    double len = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+    for (int i = 0; i < 3; i++)
+    {
+        normal[i] /= len;
+    }
 }
 
 void PointNormalProcessor::SetGlyph3DVisibility(bool visibility)

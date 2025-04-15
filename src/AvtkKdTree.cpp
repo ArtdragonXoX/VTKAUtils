@@ -90,11 +90,155 @@ std::vector<CubeFrame *> AvtkKdTree::GetRegionBoundsByPoint(double x, double y, 
     return frames;
 }
 
-void AvtkKdTree::FindPointsWithInArea(double *area, vtkIdList *ids)
+void AvtkKdTree::FindPointsInArea(double *area, vtkIdList *ids)
 {
     vtkNew<vtkIdTypeArray> idList;
     this->vtkKdTree::FindPointsInArea(area, idList);
     AUtils::IdTypeArrayToIdList(idList, ids);
+}
+
+void AvtkKdTree::FindPointsInCuboid(double cuboid[8][3], vtkIdList *ids)
+{
+    // 计算正轴包围盒
+    double bounds[6] = {DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX, DBL_MAX, -DBL_MAX};
+    for (int i = 0; i < 8; ++i)
+    {
+        bounds[0] = std::min(bounds[0], cuboid[i][0]); // xmin
+        bounds[1] = std::max(bounds[1], cuboid[i][0]); // xmax
+        bounds[2] = std::min(bounds[2], cuboid[i][1]); // ymin
+        bounds[3] = std::max(bounds[3], cuboid[i][1]); // ymax
+        bounds[4] = std::min(bounds[4], cuboid[i][2]); // zmin
+        bounds[5] = std::max(bounds[5], cuboid[i][2]); // zmax
+    }
+
+    // 使用KD树快速查找包围盒内的候选点
+    vtkNew<vtkIdList> candidateIds;
+    this->FindPointsInArea(bounds, candidateIds);
+
+    // 如果没有候选点，直接返回
+    if (candidateIds->GetNumberOfIds() == 0)
+    {
+        return;
+    }
+
+    // 获取所有点的数据集
+    vtkDataSet *dataSet = this->GetDataSet();
+    vtkPointSet *pointSet = vtkPointSet::SafeDownCast(dataSet);
+    if (!pointSet)
+        return;
+    vtkPoints *points = pointSet->GetPoints();
+
+    // 计算立方体的6个面，每个面由4个点定义
+    // 面的定义参考AUtils::cubeEdges的顺序
+    // 底面: 0,1,3,2
+    // 顶面: 4,5,7,6
+    // 侧面1: 0,1,5,4
+    // 侧面2: 1,3,7,5
+    // 侧面3: 3,2,6,7
+    // 侧面4: 2,0,4,6
+    int faces[6][4] = {
+        {0, 1, 3, 2}, // 底面
+        {4, 5, 7, 6}, // 顶面
+        {0, 1, 5, 4}, // 侧面1
+        {1, 3, 7, 5}, // 侧面2
+        {3, 2, 6, 7}, // 侧面3
+        {2, 0, 4, 6}  // 侧面4
+    };
+
+    // 计算每个面的法向量和平面方程
+    double normals[6][3];
+    double d[6];
+
+    for (int i = 0; i < 6; ++i)
+    {
+        // 计算面的两个向量
+        double v1[3], v2[3];
+        for (int j = 0; j < 3; ++j)
+        {
+            v1[j] = cuboid[faces[i][1]][j] - cuboid[faces[i][0]][j];
+            v2[j] = cuboid[faces[i][2]][j] - cuboid[faces[i][1]][j];
+        }
+
+        // 计算法向量 (v1 x v2)
+        normals[i][0] = v1[1] * v2[2] - v1[2] * v2[1];
+        normals[i][1] = v1[2] * v2[0] - v1[0] * v2[2];
+        normals[i][2] = v1[0] * v2[1] - v1[1] * v2[0];
+
+        // 归一化法向量
+        double length = sqrt(normals[i][0] * normals[i][0] +
+                             normals[i][1] * normals[i][1] +
+                             normals[i][2] * normals[i][2]);
+        if (length > 0)
+        {
+            normals[i][0] /= length;
+            normals[i][1] /= length;
+            normals[i][2] /= length;
+        }
+
+        // 计算平面方程的常数项 d (ax + by + cz + d = 0)
+        d[i] = -(normals[i][0] * cuboid[faces[i][0]][0] +
+                 normals[i][1] * cuboid[faces[i][0]][1] +
+                 normals[i][2] * cuboid[faces[i][0]][2]);
+
+        // 确保法向量指向立方体外部
+        // 计算立方体中心点
+        double center[3] = {0, 0, 0};
+        for (int j = 0; j < 8; ++j)
+        {
+            center[0] += cuboid[j][0];
+            center[1] += cuboid[j][1];
+            center[2] += cuboid[j][2];
+        }
+        center[0] /= 8.0;
+        center[1] /= 8.0;
+        center[2] /= 8.0;
+
+        // 检查法向量方向
+        double dot = normals[i][0] * (center[0] - cuboid[faces[i][0]][0]) +
+                     normals[i][1] * (center[1] - cuboid[faces[i][0]][1]) +
+                     normals[i][2] * (center[2] - cuboid[faces[i][0]][2]);
+
+        // 如果法向量指向内部，则反转
+        if (dot > 0)
+        {
+            normals[i][0] = -normals[i][0];
+            normals[i][1] = -normals[i][1];
+            normals[i][2] = -normals[i][2];
+            d[i] = -d[i];
+        }
+    }
+
+    // 遍历所有候选点，检查是否在立方体内部
+    ids->Reset();
+    for (vtkIdType i = 0; i < candidateIds->GetNumberOfIds(); ++i)
+    {
+        vtkIdType pointId = candidateIds->GetId(i);
+        double point[3];
+        points->GetPoint(pointId, point);
+
+        // 检查点是否在所有平面的内侧
+        bool inside = true;
+        for (int j = 0; j < 6; ++j)
+        {
+            // 计算点到平面的距离
+            double distance = normals[j][0] * point[0] +
+                              normals[j][1] * point[1] +
+                              normals[j][2] * point[2] + d[j];
+
+            // 如果距离为正，则点在平面外部
+            if (distance > 0)
+            {
+                inside = false;
+                break;
+            }
+        }
+
+        // 如果点在所有平面内侧，则添加到结果中
+        if (inside)
+        {
+            ids->InsertNextId(pointId);
+        }
+    }
 }
 
 std::vector<vtkKdNode *> AvtkKdTree::GetPathFromRootToNode(vtkKdNode *target) const

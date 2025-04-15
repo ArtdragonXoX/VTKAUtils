@@ -48,6 +48,8 @@ public:
 
     void FindPointsWithinArea(double *area, vtkIdList *result);
 
+    void FindPointsWithinCuboid(double cuboid[8][3], vtkIdList *result);
+
     ///@{
     /**
      * See vtkLocator interface documentation.

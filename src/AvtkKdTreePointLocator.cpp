@@ -56,7 +56,13 @@ void AvtkKdTreePointLocator::FindPointsWithinRadius(double R, const double x[3],
 void AvtkKdTreePointLocator::FindPointsWithinArea(double *area, vtkIdList *result)
 {
   this->BuildLocator();
-  this->KdTree->FindPointsWithInArea(area, result);
+  this->KdTree->FindPointsInArea(area, result);
+}
+
+void AvtkKdTreePointLocator::FindPointsWithinCuboid(double cuboid[8][3], vtkIdList *result)
+{
+  this->BuildLocator();
+  this->KdTree->FindPointsInCuboid(cuboid, result);
 }
 
 //------------------------------------------------------------------------------
@@ -112,6 +118,7 @@ void AvtkKdTreePointLocator::BuildLocatorInternal()
   }
   this->KdTree = AvtkKdTree::New();
   this->KdTree->SetUseExistingSearchStructure(this->UseExistingSearchStructure);
+  this->KdTree->SetDataSet(pointSet);
   this->KdTree->BuildLocatorFromPoints(pointSet);
   this->KdTree->GetBounds(this->Bounds);
   this->BuildTime.Modified();

@@ -52,9 +52,13 @@ public:
 
     void FindPointsInCylinder(const double *point, const double *direction, double radius, vtkIdList *resultIds);
 
-    void FindPointsWithInArea(double *area, vtkIdList *ids);
+    void FindPointsInArea(double *area, vtkIdList *ids);
+
+    void FindPointsInCuboid(double cuboid[8][3], vtkIdList *ids);
 
     vtkIdType FindClosestPoint(const double x[3]) const;
+
+    void GetMeanNormal(vtkIdList *ids, double *normal);
 
     void SetGlyph3DVisibility(bool visibility);
 
