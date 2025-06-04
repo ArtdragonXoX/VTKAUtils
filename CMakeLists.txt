@@ -1,6 +1,6 @@
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cpp include/*.h)
 
-add_library(VTKAUtils ${srcs})
+add_library(VTKAUtils STATIC ${srcs})
 
 find_package(VTK REQUIRED)
 
